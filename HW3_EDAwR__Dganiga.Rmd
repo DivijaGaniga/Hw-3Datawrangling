@@ -96,20 +96,25 @@ Use county_MI.
 Using basic R commands (i.e. no plyr or dplyr) list all the rows for counties in the Lower Peninsula.
 
 ```{r rows}
-# county_MI????
+(counties_LP <- head(county_MI[county_MI$peninsula == 'LP',], n=10))
+
+
 ```
 
 
 Now do the same thing but use dplyr. Do NOT use the pipe operator.
 
 ```{r filter1}
-# county_MI????
+
+head(filter(county_MI,peninsula == 'LP' ), n=10)
+
 ```
 
 Repeat using dplyr and using the pipe operator.
 
 ```{r filter2}
-# county_MI????
+county_MI %>% filter(peninsula == 'LP') %>% head(10)
+
 ```
 
 
@@ -118,12 +123,16 @@ List rows for counties in the UP with population less than or equal to 10000. Us
 
 ```{r}
 
+county_MI %>% filter(peninsula == 'UP') %>% filter(TotalPop <= 10000)
+
 ```
 
-Find counties with population greater than or equal to 200000, more men than women and sorted in
+Find counties with population greater than or equal to 40000, more men than women and sorted in
 ascending order by population. Use dplyr.
 
 ```{r}
+
+county_MI %>% filter(TotalPop <= 40000) %>% filter (Men > Women) %>% arrange(TotalPop)
 
 ```
 
@@ -138,6 +147,10 @@ in ascending order by median income. Remember, the Income field is already
 median income. Only select the County, TotalPop and Income fields.
 
 ```{r}
+county_MI %>% filter(peninsula =='UP', Income > 10000 & Income <35000) %>% 
+              arrange(Income) %>% 
+              select(County, TotalPop,Income)
+
 
 ```
 
