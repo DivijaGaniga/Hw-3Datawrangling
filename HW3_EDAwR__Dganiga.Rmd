@@ -147,10 +147,9 @@ in ascending order by median income. Remember, the Income field is already
 median income. Only select the County, TotalPop and Income fields.
 
 ```{r}
-county_MI %>% filter(peninsula =='UP', Income > 10000 & Income <35000) %>% 
+county_MI %>% filter(peninsula =='UP', Income >= 10000 & Income <= 35000) %>% 
               arrange(Income) %>% 
               select(County, TotalPop,Income)
-
 
 ```
 
@@ -164,12 +163,17 @@ selecting groups of columns by column number, column name, the - to not include 
 
 ```{r}
 
+county_MI %>% filter(TotalPop < 50000) %>% select((1:5),Income,Poverty, -(3))
+
 ```
 
 
 Counties with population > 100000 and just the the first 2 columns, TotalPop, and any column starting with "Inc". Sort descending by Income.
 
 ```{r}
+
+county_MI %>% filter(TotalPop >100000) %>%
+              select(1:2, TotalPop,contains("Inc"))
 
 ```
 
@@ -185,8 +189,11 @@ and display the columns County, TotalPop, pct_F. Sort descending by pct_F.
 
 
 ```{r mutate1}
-county_MI %>%
-  ???
+county_MI %>% mutate(pct_F = (Women/TotalPop) *100) %>% 
+              select(County,TotalPop,pct_F) %>% 
+              arrange(pct_F) %>% head(10)
+
+ 
 ```
 
 Now compute pct_F and save the pct_F column (along with the existing columns) in
@@ -195,6 +202,8 @@ a new data frame called county_MI_x.
 
 ```{r mutate2}
 
+county_MI_x <- county_MI %>% mutate(pct_F = (Women/TotalPop) *100) %>% 
+              arrange(pct_F)
 
 ```
 
@@ -202,6 +211,8 @@ Show that it worked by using select to show County, TotalPop, pct_F in
 the new data frame.
 
 ```{r}
+county_MI_x %>% select(County,TotalPop,pct_F) %>% 
+                head(10)
 
 ```
 
@@ -210,6 +221,10 @@ County with highest percentage of women? Lowest percentage of women? Create dply
 statements that make it easy to answer these questions. Several ways to do this.
 
 ```{r}
+
+county_MI_x %>% arrange(desc(pct_F)) %>% head (1) %>% 
+                rbind(county_MI_x %>% arrange(desc(county_MI_x$pct_F)) %>% tail(1))
+
 
 ```
 
