@@ -225,6 +225,12 @@ statements that make it easy to answer these questions. Several ways to do this.
 county_MI_x %>% arrange(desc(pct_F)) %>% head (1) %>% 
                 rbind(county_MI_x %>% arrange(desc(county_MI_x$pct_F)) %>% tail(1))
 
+# alternate way of doing
+highest_pct_women <- county_MI_x %>% arrange(desc(pct_F)) %>% head (1) 
+lowest_pct_women <- county_MI_x %>% arrange(desc(pct_F)) %>% tail (1)
+
+highest_pct_women
+lowest_pct_women
 
 ```
 
@@ -242,6 +248,10 @@ this. You could use `mutate` and/or use base R commands.
 
 ```{r}
 
+county_MI %>% mutate(total_employement = (Professional+Production+Service+Office+Construction)) %>% 
+              filter(total_employement > 100.105 | total_employement < 99.895) %>% 
+              select(County,Professional,Production,Service,Office,Construction,total_employement)
+
 ```
 
 
@@ -254,6 +264,8 @@ Find total population by peninsula using dplyr.
 
 ```{r pop_peninsula}
 
+  county_MI %>% group_by(peninsula) %>%summarise(TotalPop = sum(TotalPop)) %>%  select(peninsula,TotalPop)
+
 
 ```
 
@@ -261,6 +273,7 @@ Number of counties by peninsula.
 
 ```{r numcounties_peninsula}
 
+county_MI %>% group_by(peninsula) %>%summarise(number_of_counties= n())
 
 ```
 
@@ -273,11 +286,22 @@ one big dplyr statement.
 * 5th, 25th, 50th, 75th and 95th quantiles
 
 ```{r summarystats_mi}
-# county_MI %>%
-#   group_by() %>%
-#   summarize(MinTotalPop = min(TotalPop),
-#             MeanTotalPop = mean(TotalPop),
-#             FINISH ME
+county_MI %>% group_by(peninsula) %>%
+              summarize(MinTotalPop = min(TotalPop),
+              MaxTotalPop = max(TotalPop),          
+              MeanTotalPop = mean(TotalPop),
+              MedianTotalPop = median(TotalPop),
+              trimmedMeantotalPop = mean(TotalPop, trim = 0.05),
+              RangeTotalPop = paste(MinTotalPop,MaxTotalPop,sep=" - "),
+              std.devTotalPop = sd(TotalPop),
+              cvTotalPop = (std.devTotalPop/MeanTotalPop),
+              IQRTotalPop = IQR(TotalPop),
+              '5thquantile TotalPop' = quantile(TotalPop, 0.05),
+              '25thquantile TotalPop' = quantile(TotalPop, 0.25),
+              '50thquantile TotalPop' = quantile(TotalPop, 0.50),
+              '75thquantile TotalPop' = quantile(TotalPop, 0.47),
+              '95thquantile TotalPop' = quantile(TotalPop, 0.95)
+              ) 
 ```
 
 
