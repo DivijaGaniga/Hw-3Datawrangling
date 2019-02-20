@@ -300,11 +300,10 @@ county_MI %>% group_by(peninsula) %>%
               '25thquantile TotalPop' = quantile(TotalPop, 0.25),
               '50thquantile TotalPop' = quantile(TotalPop, 0.50),
               '75thquantile TotalPop' = quantile(TotalPop, 0.47),
-              '95thquantile TotalPop' = quantile(TotalPop, 0.95)
+              '95thquantile TotalPop' = quantile(TotalPop, 0.95),
+              rTotalPop = max(TotalPop) - min(TotalPop)
               ) 
 ```
-
-
 
 
 Now look at the entire US. Which states have the highest average percentage of
@@ -313,12 +312,21 @@ values.
 
 ```{r top10construction}
 
+county_df %>% group_by(State) %>%  
+              summarize(pct_Constructionworkers = round(mean(Construction, na.rm = TRUE),2)) %>% 
+              arrange(desc(pct_Constructionworkers)) %>% head(10)
+
+
 ```
 
 
 Which states have the lowest average percentage of people who drive to work?
 
 ```{r lowpctdrive1}
+
+county_df %>% group_by(State) %>%  
+              summarize(pct_drive = round(mean(Drive, na.rm = TRUE),2)) %>% 
+              arrange(pct_drive)  %>% head(10)
 
 ```
 
@@ -329,11 +337,21 @@ percentage of people who drive to work? Display State, County and Drive.
 
 ```{r lowpctdrive2}
 
+county_df %>% filter(TotalPop > 75000) %>% 
+              arrange(Drive) %>% 
+              select(State, County, Drive) %>%
+              head(10)
+
 ```
 
 Repeat the previous query for the state of Michigan.
 
 ```{r lowpctdrive_mi}
+
+county_MI %>% filter(TotalPop > 75000) %>% 
+              arrange(Drive) %>% 
+              select(State, County, Drive) %>%
+              head(10)
 
 ```
 
@@ -348,6 +366,8 @@ rows for this correlation matrix.
 
 ```{r}
 
+cor(county_df[,c('TotalPop','Income','ChildPoverty')], use = "complete.obs")
+
 ```
 
 ```{r correlation}
@@ -356,15 +376,18 @@ rows for this correlation matrix.
 
 Write a few sentences interpreting the correlation matrix.
 
-> 
-> 
-> 
+> Total Population is directly Correlated to income and negatively correlated to Child Poverty i.e., Total Pop is more and increases with increase in income and decreases with increase in child poverty
+> Total Population is very less positively correlated to income, there may be other factors that affect Total Pop in an area including income 
+>  There is very less correlation between Total Pop and childproperty (analysing p-value may help us accept or reject null hypothesis)
+> Income is higly negatively correlated to Childpoverty, where the income is more child poverty is less
 
 
 Compute the proportion of counties in the US with total population greater than 75000.
 You can do this very easily without dplyr. Hint: mean(). 
 
 ```{r pctgt75k}
+
+mean(county_df$TotalPop > 75000)
 
 ```
 
@@ -374,9 +397,14 @@ y-axis show relative frequencies instead of counts.
 
 
 ```{r histo1}
-# county_df %>%
-#   ??? %>%
-#   ???() + geom_histogram(???)
+
+ county_df %>%
+          filter(TotalPop > 50000)  %>%
+          ggplot(mapping =aes(x=SelfEmployed))+ 
+          geom_histogram(aes(y= (..count..)/sum(..count..)), fill ="#FF0099") +
+          scale_y_continuous(labels = scales::percent) +xlab("% of Self Employed")+
+          ylab("Relative Frequency of Self Employed")+ggtitle("Histogram of Self employed with relative frequencies")
+
 ```
 
 
@@ -385,13 +413,20 @@ a data frame to plot. Hint: You'll also want to learn about the `stat` layer in 
 
 
 ```{r create_df_toplot}
-# pop_by_region <- county_df %>%
-#   ???
-#   
+ pop_by_region <- county_df %>% group_by(Region) %>% summarise(TotalPopulation = sum(TotalPop))
+   
+ pop_by_region
+
 ```
 
 ```{r barchart}
-# ggplot(data=pop_by_region) + ???
+ggplot(data=pop_by_region, mapping = aes(x= Region, y= TotalPopulation/1000, fill = Region)) + 
+        geom_bar(stat = "identity") + ylab("Total Population (1000s)") +
+         theme(axis.title.x = element_text(face="bold", colour="Red", size=12, vjust =-1),
+               axis.title.y = element_text(face="bold", colour="red", size=12, vjust =1))+
+        ggtitle("Total Population by Region")
+
+                
 ```
 
 
@@ -404,7 +439,14 @@ Google "ggplot bar reorder". First hit: https://stackoverflow.com/questions/2566
 
 ```{r barchart2}
 
-
+ggplot(pop_by_region, aes(x = reorder(Region, TotalPopulation), y = TotalPopulation/1000)) + 
+        geom_bar(stat = "identity", aes(fill = Region))+coord_flip()+
+        theme(axis.text.y = element_text(size=10, hjust = 1),
+              axis.title.x = element_text(face="bold", colour="red", size=12, vjust = 1),
+              axis.title.y = element_text(face="bold", colour="red", size=12, hjust = 0.5))+
+              ylab("Total Population(1000s)")+ xlab("Region")+
+            ggtitle("Total Population in US by Region")
+              
 ```
 
 How do the three counties in the Metro Detroit area (Macomb, Oakland, Wayne) compare in terms
@@ -413,6 +455,12 @@ looks like this:
 
 ```{r}
 knitr::include_graphics('images/stacked_bars.png')
+
+library(tidyr)
+    
+  
+    
+
 ```
 
 Hint: The tidyr package is helpful.
@@ -421,11 +469,20 @@ Hint: The tidyr package is helpful.
 ```{r gather}
 # Transform from wide to long
 
-
+county_MI_long <- county_MI %>% filter(County %in% c('Macomb', 'Oakland','Wayne')) %>% 
+                select(County, Construction, Production, Professional, Office, Service) %>% 
+                gather(JobType, Pct, Construction: Service) 
+                
 ```
 
 ```{r stackedplot}
 
+  ggplot(data = county_MI_long, aes(x= County, y= Pct))+geom_bar(stat = "Identity", aes(fill = JobType))+
+                theme(axis.text.y = element_text(size=10, hjust = 1),
+              axis.title.x = element_text(size=12, vjust = 1),
+              axis.title.y = element_text(size=12, hjust = 0.5))+
+              ylab("Percentage")+ xlab("County")+
+            ggtitle("Breakdown Jobs in Metro Detroit area Counties")
 
 ```
 
