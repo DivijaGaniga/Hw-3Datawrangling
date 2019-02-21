@@ -248,9 +248,10 @@ this. You could use `mutate` and/or use base R commands.
 
 ```{r}
 
-county_MI %>% mutate(total_employement = (Professional+Production+Service+Office+Construction)) %>% 
-              filter(total_employement > 100.105 | total_employement < 99.895) %>% 
-              select(County,Professional,Production,Service,Office,Construction,total_employement)
+x <- county_MI %>% mutate(total_employement = (Professional+Production+Service+Office+Construction)) %>% 
+                           select(County,Professional,Production,Service,Office,Construction,total_employement)
+
+head(x$total_employement > 100.105 | x$total_employement < 99.895 )
 
 ```
 
@@ -286,13 +287,14 @@ one big dplyr statement.
 * 5th, 25th, 50th, 75th and 95th quantiles
 
 ```{r summarystats_mi}
-county_MI %>% group_by(peninsula) %>%
+ county_MI %>% group_by(peninsula) %>%
               summarize(MinTotalPop = min(TotalPop),
               MaxTotalPop = max(TotalPop),          
               MeanTotalPop = mean(TotalPop),
               MedianTotalPop = median(TotalPop),
               trimmedMeantotalPop = mean(TotalPop, trim = 0.05),
               RangeTotalPop = paste(MinTotalPop,MaxTotalPop,sep=" - "),
+              rangeTotalPop('min-max values') = max(TotalPop) - min(TotalPop),
               std.devTotalPop = sd(TotalPop),
               cvTotalPop = (std.devTotalPop/MeanTotalPop),
               IQRTotalPop = IQR(TotalPop),
@@ -300,9 +302,9 @@ county_MI %>% group_by(peninsula) %>%
               '25thquantile TotalPop' = quantile(TotalPop, 0.25),
               '50thquantile TotalPop' = quantile(TotalPop, 0.50),
               '75thquantile TotalPop' = quantile(TotalPop, 0.47),
-              '95thquantile TotalPop' = quantile(TotalPop, 0.95),
-              rTotalPop = max(TotalPop) - min(TotalPop)
-              ) 
+              '95thquantile TotalPop' = quantile(TotalPop, 0.95)
+              ) %>%  print(width = Inf)
+
 ```
 
 
@@ -376,10 +378,10 @@ cor(county_df[,c('TotalPop','Income','ChildPoverty')], use = "complete.obs")
 
 Write a few sentences interpreting the correlation matrix.
 
-> Total Population is directly Correlated to income and negatively correlated to Child Poverty i.e., Total Pop is more and increases with increase in income and decreases with increase in child poverty
-> Total Population is very less positively correlated to income, there may be other factors that affect Total Pop in an area including income 
->  There is very less correlation between Total Pop and childproperty (analysing p-value may help us accept or reject null hypothesis)
-> Income is higly negatively correlated to Childpoverty, where the income is more child poverty is less
+> - Total Population is directly Correlated to income and negatively correlated to Child Poverty i.e., Total Pop is more and increases with increase in income and decreases with increase in child poverty
+> - Total Population is very less positively correlated to income, there may be other factors that affect Total Pop in an area including income 
+>  - There is very less correlation between Total Pop and childproperty (analysing p-value may help us accept or reject null hypothesis)
+> - Income is higly negatively correlated to Childpoverty, where the income is more child poverty is less
 
 
 Compute the proportion of counties in the US with total population greater than 75000.
