@@ -248,10 +248,16 @@ this. You could use `mutate` and/or use base R commands.
 
 ```{r}
 
-x <- county_MI %>% mutate(total_employement = (Professional+Production+Service+Office+Construction)) %>% 
-                           select(County,Professional,Production,Service,Office,Construction,total_employement)
+county_MI_employement <-  county_MI %>% mutate(total_employement = (Professional+Production+Service+Office+Construction))
+                         
+ all(county_MI_employement$total_employement < 100.105 & county_MI_employement$total_employement > 99.895 )
 
-head(x$total_employement > 100.105 | x$total_employement < 99.895 )
+# DIfferent way 
+ 
+county_MI_employement_2 <- county_MI %>% mutate(total_employement = (Professional+Production+Service+Office+Construction)) %>%
+                            mutate(sumupto100 = total_employement < 100.105 & total_employement > 99.895 )
+
+all(county_MI_employement_2$sumupto100)
 
 ```
 
@@ -288,21 +294,20 @@ one big dplyr statement.
 
 ```{r summarystats_mi}
  county_MI %>% group_by(peninsula) %>%
-              summarize(MinTotalPop = min(TotalPop),
-              MaxTotalPop = max(TotalPop),          
-              MeanTotalPop = mean(TotalPop),
-              MedianTotalPop = median(TotalPop),
-              trimmedMeantotalPop = mean(TotalPop, trim = 0.05),
-              RangeTotalPop = paste(MinTotalPop,MaxTotalPop,sep=" - "),
-              rangeTotalPop('min-max values') = max(TotalPop) - min(TotalPop),
-              std.devTotalPop = sd(TotalPop),
+              summarize(MinTotalPop = min(TotalPop, na.rm = TRUE),
+              MaxTotalPop = max(TotalPop, na.rm = TRUE),          
+              MeanTotalPop = mean(TotalPop, na.rm = TRUE),
+              MedianTotalPop = median(TotalPop, na.rm = TRUE),
+              trimmedMeantotalPop = mean(TotalPop, trim = 0.05, na.rm = TRUE),
+              RangeTotalPop= ( MaxTotalPop- MinTotalPop),
+              std.devTotalPop = sd(TotalPop, na.rm = TRUE),
               cvTotalPop = (std.devTotalPop/MeanTotalPop),
-              IQRTotalPop = IQR(TotalPop),
-              '5thquantile TotalPop' = quantile(TotalPop, 0.05),
-              '25thquantile TotalPop' = quantile(TotalPop, 0.25),
-              '50thquantile TotalPop' = quantile(TotalPop, 0.50),
-              '75thquantile TotalPop' = quantile(TotalPop, 0.47),
-              '95thquantile TotalPop' = quantile(TotalPop, 0.95)
+              IQRTotalPop = IQR(TotalPop,na.rm = TRUE),
+              '5thquantile TotalPop' = quantile(TotalPop, 0.05,na.rm = TRUE),
+              '25thquantile TotalPop' = quantile(TotalPop, 0.25,na.rm = TRUE),
+              '50thquantile TotalPop' = quantile(TotalPop, 0.50,na.rm = TRUE),
+              '75thquantile TotalPop' = quantile(TotalPop, 0.47,na.rm = TRUE),
+              '95thquantile TotalPop' = quantile(TotalPop, 0.95,na.rm = TRUE)
               ) %>%  print(width = Inf)
 
 ```
